@@ -24,15 +24,38 @@ use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
-| WEB ROUTES (SAFE VERSION)
+| DEBUG ROUTES (WAJIB BUAT CEK)
+|--------------------------------------------------------------------------
+*/
+
+// ✅ TEST SERVER
+Route::get('/test', function () {
+    return "TEST HIDUP 🔥";
+});
+
+// ✅ TEST DB
+Route::get('/cek-db', function () {
+    try {
+        DB::connection()->getPdo();
+        return "DB CONNECTED ✅";
+    } catch (\Exception $e) {
+        return "DB ERROR: " . $e->getMessage();
+    }
+});
+
+// ✅ ROOT SAFE (ANTI ERROR)
+Route::get('/', function () {
+    return "HOME OK 🔥";
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| NORMAL ROUTES
 |--------------------------------------------------------------------------
 */
 
 // ================= LANDING =================
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Route::get('/fitur', function () {
     return view('fitur');
 })->name('fitur');
@@ -46,13 +69,12 @@ Route::middleware(['auth','verified'])->group(function () {
 
         try {
 
-            // ================= BASIC =================
             $totalObat = Obat::count();
             $totalSupplier = Supplier::count();
             $totalMasuk = TransaksiMasuk::count();
             $totalKeluar = TransaksiKeluar::count();
 
-            // ================= GRAFIK OBAT =================
+            // GRAFIK OBAT
             $grafik = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
                 ->groupBy('obat_id')
                 ->with('obat')
@@ -68,7 +90,7 @@ Route::middleware(['auth','verified'])->group(function () {
                 }
             }
 
-            // ================= GRAFIK BULAN =================
+            // GRAFIK BULAN
             $grafikBulanan = TransaksiKeluar::selectRaw('MONTH(created_at) as bulan, SUM(jumlah) as total')
                 ->groupBy('bulan')
                 ->orderBy('bulan')
@@ -88,10 +110,10 @@ Route::middleware(['auth','verified'])->group(function () {
 
             $bulanData = array_values($bulanData);
 
-            // ================= STOK MINIMUM =================
+            // STOK MINIMUM
             $stokMinimum = Obat::whereColumn('stok','<=','safety_stock')->get();
 
-            // NOTIF AMAN (gak bikin crash)
+            // NOTIF (SAFE)
             try {
                 $gudangs = User::where('role','gudang')->get();
                 foreach ($stokMinimum as $obat) {
@@ -99,11 +121,9 @@ Route::middleware(['auth','verified'])->group(function () {
                         $gudang->notify(new StokMenipisNotification($obat));
                     }
                 }
-            } catch (\Exception $e) {
-                // skip notif kalau error
-            }
+            } catch (\Exception $e) {}
 
-            // ================= OBAT TERLARIS =================
+            // OBAT TERLARIS
             $obatTerlaris = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
                 ->groupBy('obat_id')
                 ->orderByDesc('total')
@@ -117,7 +137,7 @@ Route::middleware(['auth','verified'])->group(function () {
                     " sebanyak " . $obatTerlaris->total . " unit.";
             }
 
-            // ================= TOP OBAT =================
+            // TOP OBAT
             $topObat = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
                 ->groupBy('obat_id')
                 ->orderByDesc('total')
@@ -125,7 +145,7 @@ Route::middleware(['auth','verified'])->group(function () {
                 ->take(5)
                 ->get();
 
-            // ================= ROP =================
+            // ROP
             $rekomendasiPesan = Obat::whereColumn('stok','<=','rop')->get();
             $totalHarusPesan = $rekomendasiPesan->count();
 
@@ -146,8 +166,6 @@ Route::middleware(['auth','verified'])->group(function () {
             ));
 
         } catch (\Exception $e) {
-
-            // 🔥 FALLBACK BIAR GAK 502
             return "Dashboard error: " . $e->getMessage();
         }
 
