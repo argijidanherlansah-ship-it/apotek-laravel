@@ -24,7 +24,7 @@ RUN php artisan cache:clear || true
 RUN php artisan route:clear || true
 RUN php artisan view:clear || true
 
-# migrate
+# 🔥 migrate (WAJIB)
 RUN php artisan migrate --force || true
 
 EXPOSE 8080
