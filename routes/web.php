@@ -20,10 +20,11 @@ use App\Models\User;
 use App\Notifications\StokMenipisNotification;
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
-| WEB ROUTES
+| WEB ROUTES (SAFE VERSION)
 |--------------------------------------------------------------------------
 */
 
@@ -43,99 +44,112 @@ Route::middleware(['auth','verified'])->group(function () {
     // ================= DASHBOARD =================
     Route::get('/dashboard', function () {
 
-        $totalObat = Obat::count();
-        $totalSupplier = Supplier::count();
-        $totalMasuk = TransaksiMasuk::count();
-        $totalKeluar = TransaksiKeluar::count();
+        try {
 
-        // Grafik Obat
-        $grafik = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
-            ->groupBy('obat_id')
-            ->with('obat')
-            ->get();
+            // ================= BASIC =================
+            $totalObat = Obat::count();
+            $totalSupplier = Supplier::count();
+            $totalMasuk = TransaksiMasuk::count();
+            $totalKeluar = TransaksiKeluar::count();
 
-        $labels = [];
-        $data = [];
+            // ================= GRAFIK OBAT =================
+            $grafik = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
+                ->groupBy('obat_id')
+                ->with('obat')
+                ->get();
 
-        foreach ($grafik as $g) {
-            if ($g->obat) {
-                $labels[] = $g->obat->nama_obat;
-                $data[] = $g->total;
+            $labels = [];
+            $data = [];
+
+            foreach ($grafik as $g) {
+                if ($g->obat) {
+                    $labels[] = $g->obat->nama_obat;
+                    $data[] = $g->total;
+                }
             }
-        }
 
-        // Grafik Bulanan
-        $grafikBulanan = TransaksiKeluar::selectRaw('MONTH(created_at) as bulan, SUM(jumlah) as total')
-            ->groupBy('bulan')
-            ->orderBy('bulan')
-            ->get();
+            // ================= GRAFIK BULAN =================
+            $grafikBulanan = TransaksiKeluar::selectRaw('MONTH(created_at) as bulan, SUM(jumlah) as total')
+                ->groupBy('bulan')
+                ->orderBy('bulan')
+                ->get();
 
-        $namaBulan = [
-            1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',
-            7=>'Jul',8=>'Agu',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'
-        ];
+            $namaBulan = [
+                1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',
+                7=>'Jul',8=>'Agu',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'
+            ];
 
-        $bulanLabels = array_values($namaBulan);
-        $bulanData = array_fill(1, 12, 0);
+            $bulanLabels = array_values($namaBulan);
+            $bulanData = array_fill(1, 12, 0);
 
-        foreach ($grafikBulanan as $b) {
-            $bulanData[$b->bulan] = $b->total;
-        }
-
-        $bulanData = array_values($bulanData);
-
-        // ================= STOK MINIMUM =================
-        $stokMinimum = Obat::whereColumn('stok','<=','safety_stock')->get();
-
-        $gudangs = User::where('role','gudang')->get();
-
-        foreach ($stokMinimum as $obat) {
-            foreach ($gudangs as $gudang) {
-                $gudang->notify(new StokMenipisNotification($obat));
+            foreach ($grafikBulanan as $b) {
+                $bulanData[$b->bulan] = $b->total;
             }
+
+            $bulanData = array_values($bulanData);
+
+            // ================= STOK MINIMUM =================
+            $stokMinimum = Obat::whereColumn('stok','<=','safety_stock')->get();
+
+            // NOTIF AMAN (gak bikin crash)
+            try {
+                $gudangs = User::where('role','gudang')->get();
+                foreach ($stokMinimum as $obat) {
+                    foreach ($gudangs as $gudang) {
+                        $gudang->notify(new StokMenipisNotification($obat));
+                    }
+                }
+            } catch (\Exception $e) {
+                // skip notif kalau error
+            }
+
+            // ================= OBAT TERLARIS =================
+            $obatTerlaris = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
+                ->groupBy('obat_id')
+                ->orderByDesc('total')
+                ->with('obat')
+                ->first();
+
+            $insight = null;
+            if ($obatTerlaris && $obatTerlaris->obat) {
+                $insight = "Obat paling banyak digunakan adalah "
+                    . $obatTerlaris->obat->nama_obat .
+                    " sebanyak " . $obatTerlaris->total . " unit.";
+            }
+
+            // ================= TOP OBAT =================
+            $topObat = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
+                ->groupBy('obat_id')
+                ->orderByDesc('total')
+                ->with('obat')
+                ->take(5)
+                ->get();
+
+            // ================= ROP =================
+            $rekomendasiPesan = Obat::whereColumn('stok','<=','rop')->get();
+            $totalHarusPesan = $rekomendasiPesan->count();
+
+            return view('dashboard', compact(
+                'totalObat',
+                'totalSupplier',
+                'totalMasuk',
+                'totalKeluar',
+                'labels',
+                'data',
+                'stokMinimum',
+                'bulanLabels',
+                'bulanData',
+                'topObat',
+                'rekomendasiPesan',
+                'insight',
+                'totalHarusPesan'
+            ));
+
+        } catch (\Exception $e) {
+
+            // 🔥 FALLBACK BIAR GAK 502
+            return "Dashboard error: " . $e->getMessage();
         }
-
-        // ================= OBAT TERLARIS =================
-        $obatTerlaris = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
-            ->groupBy('obat_id')
-            ->orderByDesc('total')
-            ->with('obat')
-            ->first();
-
-        $insight = null;
-        if ($obatTerlaris && $obatTerlaris->obat) {
-            $insight = "Obat paling banyak digunakan adalah "
-                . $obatTerlaris->obat->nama_obat .
-                " sebanyak " . $obatTerlaris->total . " unit.";
-        }
-
-        // ================= TOP OBAT =================
-        $topObat = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
-            ->groupBy('obat_id')
-            ->orderByDesc('total')
-            ->with('obat')
-            ->take(5)
-            ->get();
-
-        // ================= ROP =================
-        $rekomendasiPesan = Obat::whereColumn('stok','<=','rop')->get();
-        $totalHarusPesan = $rekomendasiPesan->count();
-
-        return view('dashboard', compact(
-            'totalObat',
-            'totalSupplier',
-            'totalMasuk',
-            'totalKeluar',
-            'labels',
-            'data',
-            'stokMinimum',
-            'bulanLabels',
-            'bulanData',
-            'topObat',
-            'rekomendasiPesan',
-            'insight',
-            'totalHarusPesan'
-        ));
 
     })->name('dashboard');
 
