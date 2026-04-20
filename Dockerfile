@@ -12,20 +12,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN composer install --no-dev --optimize-autoloader
 
-# sqlite
+# ✅ buat sqlite
 RUN mkdir -p database && touch database/database.sqlite
 
-# permission
+# ✅ permission
 RUN chmod -R 777 storage bootstrap/cache database
 
-# clear cache
-RUN php artisan config:clear || true
-RUN php artisan cache:clear || true
-RUN php artisan route:clear || true
-RUN php artisan view:clear || true
-
-# 🔥 migrate (WAJIB)
-RUN php artisan migrate --force || true
+# ❌ JANGAN JALANIN ARTISAN SAAT BUILD (INI YANG BIKIN CRASH)
+# HAPUS SEMUA:
+# php artisan config:clear
+# php artisan cache:clear
+# php artisan migrate
 
 EXPOSE 8080
 
