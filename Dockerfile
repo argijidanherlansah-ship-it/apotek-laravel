@@ -4,25 +4,26 @@ WORKDIR /app
 
 COPY . .
 
+# install dependency php
 RUN apt-get update && apt-get install -y \
     unzip curl git libzip-dev zip \
     && docker-php-ext-install zip pdo pdo_sqlite
 
+# install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install --no-dev --optimize-autoloader
+# install laravel dependency
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# ✅ buat sqlite
-RUN mkdir -p database && touch database/database.sqlite
+# buat sqlite
+RUN mkdir -p database
+RUN touch database/database.sqlite
 
-# ✅ permission
-RUN chmod -R 777 storage bootstrap/cache database
+# permission (AMAN)
+RUN chmod -R 777 storage bootstrap/cache database || true
 
-# ❌ JANGAN JALANIN ARTISAN SAAT BUILD (INI YANG BIKIN CRASH)
-# HAPUS SEMUA:
-# php artisan config:clear
-# php artisan cache:clear
-# php artisan migrate
+# ❌ JANGAN ADA ARTISAN DI BUILD
+# (ini penyebab build lu gagal tadi)
 
 EXPOSE 8080
 
