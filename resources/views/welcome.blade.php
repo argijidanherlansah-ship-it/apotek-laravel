@@ -5,12 +5,15 @@
     <title>Apotek Tiga Dara</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    {{-- 🔥 VITE (PRODUCTION) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- 🔥 FALLBACK CDN (KALAU VITE GAGAL) --}}
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
     html { scroll-behavior: smooth; }
 
-    /* ANIMASI */
     @keyframes fadeUp {
         0% { opacity: 0; transform: translateY(40px); }
         100% { opacity: 1; transform: translateY(0); }
@@ -27,7 +30,6 @@
         transform: translateY(0);
     }
 
-    /* CARD PREMIUM */
     .card {
         backdrop-filter: blur(12px);
         background: rgba(255,255,255,0.1);
@@ -40,7 +42,6 @@
         box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
 
-    /* GRADIENT TEXT */
     .gradient-text {
         background: linear-gradient(to right, #22c55e, #38bdf8);
         -webkit-background-clip: text;
@@ -54,7 +55,7 @@
 <!-- NAVBAR -->
 <div id="navbar" class="fixed top-0 left-0 w-full flex justify-between items-center px-6 md:px-10 py-4 z-50 text-white transition-all duration-300">
     <h1 class="text-lg md:text-xl font-bold tracking-wide">
-         Apotek Tiga Dara
+        Apotek Tiga Dara
     </h1>
 
     <div class="text-sm md:text-base">
@@ -91,7 +92,7 @@
         <div class="flex flex-wrap justify-center gap-3">
             <a href="/login" 
                class="bg-green-500 px-6 py-3 rounded-lg shadow font-semibold hover:scale-105 transition">
-                  Masuk
+                Masuk
             </a>
 
             <a href="#fitur" 
@@ -115,39 +116,35 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-        <!-- CARD 1 -->
         <div class="card p-8 text-center fade-up">
             <div class="text-4xl mb-4">💊</div>
             <h3 class="font-bold text-xl mb-2">Manajemen Stok</h3>
             <p class="opacity-70">
-                Mengelola data obat dan stok secara real-time dengan sistem terintegrasi.
+                Mengelola data obat dan stok secara real-time.
             </p>
         </div>
 
-        <!-- CARD 2 -->
         <div class="card p-8 text-center fade-up">
             <div class="text-4xl mb-4">📊</div>
             <h3 class="font-bold text-xl mb-2">Analisis ROP</h3>
             <p class="opacity-70">
-                Menentukan kapan harus melakukan pemesanan ulang secara otomatis.
+                Penentuan waktu pemesanan ulang otomatis.
             </p>
         </div>
 
-        <!-- CARD 3 -->
         <div class="card p-8 text-center fade-up">
             <div class="text-4xl mb-4">🧠</div>
             <h3 class="font-bold text-xl mb-2">Safety Stock</h3>
             <p class="opacity-70">
-                Menentukan stok minimum untuk menghindari kehabisan barang saat permintaan tinggi.
+                Menentukan stok minimum untuk keamanan.
             </p>
         </div>
 
-        <!-- CARD 4 -->
         <div class="card p-8 text-center fade-up">
             <div class="text-4xl mb-4">🚨</div>
-            <h3 class="font-bold text-xl mb-2">Notifikasi Stok</h3>
+            <h3 class="font-bold text-xl mb-2">Notifikasi</h3>
             <p class="opacity-70">
-                Memberikan peringatan ketika stok obat mendekati batas minimum.
+                Peringatan saat stok menipis.
             </p>
         </div>
 
@@ -157,10 +154,9 @@
 
 <!-- FOOTER -->
 <div class="text-center text-sm text-gray-500 py-6">
-    © {{ date('Y') }} Apotek Tiga Dara - Sistem Inventory
+    © {{ date('Y') }} Apotek Tiga Dara
 </div>
 
-<!-- SCRIPT -->
 <script>
 // navbar scroll
 window.addEventListener("scroll", function () {
@@ -177,7 +173,7 @@ window.addEventListener("scroll", function () {
     }
 });
 
-// animasi muncul saat scroll
+// animasi scroll
 const elements = document.querySelectorAll('.fade-up');
 
 window.addEventListener('scroll', () => {
