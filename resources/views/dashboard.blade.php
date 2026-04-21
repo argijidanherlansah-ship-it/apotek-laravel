@@ -1,10 +1,4 @@
-<x-app-layout>
-
-<x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Dashboard
-    </h2>
-</x-slot>
+<x-layouts.app>
 
 <div class="p-6 space-y-6">
 
@@ -43,12 +37,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <div class="bg-white p-6 rounded-2xl shadow">
-            <h3 class="font-bold mb-4"> Grafik Penggunaan Obat</h3>
+            <h3 class="font-bold mb-4">📊 Grafik Penggunaan Obat</h3>
             <canvas id="chartObat"></canvas>
         </div>
 
         <div class="bg-white p-6 rounded-2xl shadow">
-            <h3 class="font-bold mb-4"> Grafik Bulanan</h3>
+            <h3 class="font-bold mb-4">📈 Grafik Bulanan</h3>
             <canvas id="chartBulan"></canvas>
         </div>
 
@@ -72,13 +66,11 @@
     </div>
     @endif
 
-    <!-- TOP OBAT PREMIUM -->
+    <!-- TOP OBAT -->
     @if($topObat->count())
     <div class="bg-white p-6 rounded-2xl shadow-lg">
 
-        <h3 class="font-bold text-lg mb-6 flex items-center gap-2">
-             Top Obat Terlaris
-        </h3>
+        <h3 class="font-bold text-lg mb-6">🔥 Top Obat Terlaris</h3>
 
         <div class="space-y-4">
 
@@ -89,32 +81,17 @@
                 $percent = ($item->total / $max) * 100;
             @endphp
 
-            <div class="p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition hover:scale-[1.01]">
+            <div class="p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
 
-                <div class="flex justify-between items-center mb-2">
-                    <div class="flex items-center gap-3">
-
-                        <!-- RANK -->
-                        <div class="
-                            w-8 h-8 flex items-center justify-center rounded-full text-white text-sm font-bold
-                            {{ $index == 0 ? 'bg-yellow-400' : ($index == 1 ? 'bg-gray-400' : ($index == 2 ? 'bg-orange-400' : 'bg-blue-400')) }}
-                        ">
-                            {{ $index + 1 }}
-                        </div>
-
-                        <!-- NAMA -->
-                        <span class="font-semibold text-gray-700">
-                            {{ $item->obat->nama_obat ?? '-' }}
-                        </span>
-                    </div>
-
-                    <!-- TOTAL -->
-                    <span class="text-sm font-bold text-gray-600">
+                <div class="flex justify-between mb-2">
+                    <span class="font-semibold">
+                        {{ $item->obat->nama_obat ?? '-' }}
+                    </span>
+                    <span class="text-sm font-bold">
                         {{ $item->total }} unit
                     </span>
                 </div>
 
-                <!-- PROGRESS -->
                 <div class="w-full bg-gray-200 rounded-full h-2">
                     <div class="bg-gradient-to-r from-sky-500 to-emerald-500 h-2 rounded-full"
                          style="width: {{ $percent }}%">
@@ -142,37 +119,21 @@ const data = @json($data);
 const bulanLabels = @json($bulanLabels);
 const bulanData = @json($bulanData);
 
-// BAR CHART
 new Chart(document.getElementById('chartObat'), {
     type: 'bar',
     data: {
         labels: labels,
-        datasets: [{
-            label: 'Penggunaan Obat',
-            data: data,
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
+        datasets: [{ data: data }]
     }
 });
 
-// LINE CHART
 new Chart(document.getElementById('chartBulan'), {
     type: 'line',
     data: {
         labels: bulanLabels,
-        datasets: [{
-            label: 'Total Keluar',
-            data: bulanData,
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: { responsive: true }
+        datasets: [{ data: bulanData }]
+    }
 });
 </script>
 
-</x-app-layout>
+</x-layouts.app>

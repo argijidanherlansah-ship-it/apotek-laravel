@@ -1,57 +1,87 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <title>Dashboard - Apotek Tiga Dara</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    @php
-        $setting = \App\Models\Setting::first();
-    @endphp
-
-    <!-- TITLE DINAMIS -->
-    <title>
-        {{ $setting->nama_apotek ?? config('app.name', 'Apotek Tiga Dara') }}
-    </title>
-
-    <!-- FAVICON DINAMIS -->
-    @if($setting && $setting->logo)
-        <link rel="icon" href="{{ asset('images/'.$setting->logo) }}">
-    @else
-        <link rel="icon" href="{{ asset('images/logo-apotek.png') }}">
-    @endif
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
 </head>
 
-<body class="font-sans antialiased">
+<body class="bg-gray-100">
 
-    <div class="min-h-screen bg-gray-100">
+<div class="flex h-screen">
 
-        <!-- NAVBAR -->
-        @include('layouts.navigation')
+    <!-- SIDEBAR -->
+    <div class="w-64 bg-gray-900 text-white flex flex-col">
 
-        <!-- HEADER -->
-        @if (isset($header))
-            <header class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    {{ $header }}
-                </div>
-            </header>
-        @endif
+        <div class="p-6 text-2xl font-bold border-b border-gray-700">
+            💊 Apotek
+        </div>
 
-        <!-- CONTENT -->
-        <main>
-            {{ $slot }}
-        </main>
+        <nav class="flex-1 p-4 space-y-2">
+
+            <a href="/dashboard" class="block px-4 py-2 rounded-lg hover:bg-gray-700">
+                📊 Dashboard
+            </a>
+
+            <a href="/obat" class="block px-4 py-2 rounded-lg hover:bg-gray-700">
+                💊 Data Obat
+            </a>
+
+            <a href="/supplier" class="block px-4 py-2 rounded-lg hover:bg-gray-700">
+                🏢 Supplier
+            </a>
+
+            <a href="/transaksi-masuk" class="block px-4 py-2 rounded-lg hover:bg-gray-700">
+                📥 Barang Masuk
+            </a>
+
+            <a href="/transaksi-keluar" class="block px-4 py-2 rounded-lg hover:bg-gray-700">
+                📤 Barang Keluar
+            </a>
+
+            <a href="/laporan" class="block px-4 py-2 rounded-lg hover:bg-gray-700">
+                📄 Laporan
+            </a>
+
+        </nav>
+
+        <div class="p-4 border-t border-gray-700">
+            <form method="POST" action="/logout">
+                @csrf
+                <button class="w-full bg-red-500 py-2 rounded-lg hover:bg-red-600">
+                    Logout
+                </button>
+            </form>
+        </div>
 
     </div>
+
+    <!-- MAIN -->
+    <div class="flex-1 flex flex-col">
+
+        <!-- NAVBAR -->
+        <div class="bg-white shadow p-4 flex justify-between items-center">
+
+            <h1 class="text-xl font-bold">
+                Dashboard
+            </h1>
+
+            <div>
+                👤 {{ Auth::user()->name ?? 'User' }}
+            </div>
+
+        </div>
+
+        <!-- CONTENT -->
+        <div class="p-6 overflow-y-auto">
+            {{ $slot }}
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 </html>
