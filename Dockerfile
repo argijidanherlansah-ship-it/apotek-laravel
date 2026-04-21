@@ -17,20 +17,21 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Set working directory
 WORKDIR /app
 
-# Copy project
+# Copy semua file project
 COPY . .
 
-# Install Laravel dependencies
+# Install dependency Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Clear cache
+# Clear cache Laravel
 RUN php artisan config:clear
 RUN php artisan cache:clear
 
-# Permission
+# Fix permission
 RUN chmod -R 777 storage bootstrap/cache
 
-# RUN APP (FIX)
+# Jalankan Laravel (FIX TANPA ERROR)
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
