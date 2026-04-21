@@ -5,7 +5,8 @@
     <title>Login - Apotek Tiga Dara</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- FIX: Pakai CDN Tailwind (bukan Vite) -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
     /* VIDEO BACKGROUND */
@@ -42,6 +43,8 @@
 
     /* CARD */
     .glass {
+        position: relative;
+        z-index: 10;
         background: rgba(255,255,255,0.15);
         backdrop-filter: blur(20px);
         border-radius: 20px;
