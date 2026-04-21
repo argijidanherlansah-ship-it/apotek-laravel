@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Packages.composer", "php82Extensions.pdo_sqlite", "php82Extensions.zip"]
+nixPkgs = ["php82", "php82Packages.composer"]
 
 [phases.install]
 cmds = [
@@ -8,15 +8,9 @@ cmds = [
 
 [phases.build]
 cmds = [
-  "mkdir -p database",
-  "touch database/database.sqlite",
-  "chmod -R 777 storage bootstrap/cache database",
-  "php artisan config:clear || true",
-  "php artisan cache:clear || true",
-  "php artisan route:clear || true",
-  "php artisan view:clear || true",
-  "php artisan migrate --force || true"
+  "php artisan config:cache",
+  "php artisan route:cache"
 ]
 
 [start]
-cmd = "php artisan serve --host=0.0.0.0 --port=8080"
+cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
