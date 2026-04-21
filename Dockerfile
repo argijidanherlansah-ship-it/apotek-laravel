@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /app
 
 # Copy project
@@ -26,12 +25,12 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Clear cache (biar aman)
+# Clear cache
 RUN php artisan config:clear
 RUN php artisan cache:clear
 
-# Permission (penting buat storage & cache)
+# Permission
 RUN chmod -R 777 storage bootstrap/cache
 
-# Run Laravel (IMPORTANT)
-CMD ["sh", "-c", "php artisan migrate --force && php -S 0.0.0.0:8080 -t public"]
+# RUN APP (FIX)
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
