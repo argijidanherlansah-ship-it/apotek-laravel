@@ -25,7 +25,6 @@
         to { transform: scale(1.1); }
     }
 
-    /* MOBILE FIX VIDEO */
     @media (max-width: 768px) {
         #bg-video {
             transform: scale(1.2);
@@ -82,29 +81,26 @@
 <!-- OVERLAY -->
 <div class="overlay"></div>
 
-@php
-$setting = \App\Models\Setting::first();
-@endphp
+<!-- ERROR MESSAGE -->
+@if ($errors->any())
+    <div class="absolute top-5 bg-red-500 text-white px-4 py-2 rounded shadow">
+        {{ $errors->first() }}
+    </div>
+@endif
 
+<!-- CARD LOGIN -->
 <div class="glass p-6 md:p-8 w-full max-w-sm md:max-w-md animate text-white text-center">
 
     <!-- LOGO -->
     <div class="mb-4">
-        <div class="w-24 h-24 md:w-20 md:h-20 mx-auto rounded-full overflow-hidden border-2 border-white shadow-lg">
-            @if($setting && $setting->logo)
-                <img src="{{ asset('images/'.$setting->logo) }}" 
-                     class="w-full h-full object-contain">
-            @else
-                <div class="w-full h-full flex items-center justify-center bg-white text-green-600 font-bold">
-                    💊
-                </div>
-            @endif
+        <div class="w-24 h-24 mx-auto rounded-full overflow-hidden border-2 border-white shadow-lg">
+            <img src="{{ asset('images/logo.png') }}" class="w-full h-full object-contain">
         </div>
     </div>
 
     <!-- TITLE -->
     <h2 class="text-2xl font-bold mb-1">
-        {{ $setting->nama_apotek ?? 'Apotek Tiga Dara' }}
+        Apotek Tiga Dara
     </h2>
     <p class="text-sm mb-6 opacity-80">Inventory Management System</p>
 
