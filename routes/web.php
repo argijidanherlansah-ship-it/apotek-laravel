@@ -24,9 +24,25 @@ use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
-| WEB ROUTES (SAFE VERSION)
+| WEB ROUTES (FINAL FIX VERSION)
 |--------------------------------------------------------------------------
 */
+
+// ================= INIT USER (SEMENTARA) =================
+Route::get('/init-user', function () {
+    try {
+        \App\Models\User::create([
+            'name' => 'admin',
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('12345678')
+        ]);
+
+        return 'User berhasil dibuat';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
+
 
 // ================= LANDING =================
 Route::get('/', function () {
@@ -46,7 +62,6 @@ Route::middleware(['auth','verified'])->group(function () {
 
         try {
 
-            // ================= BASIC =================
             $totalObat = Obat::count();
             $totalSupplier = Supplier::count();
             $totalMasuk = TransaksiMasuk::count();
@@ -91,7 +106,7 @@ Route::middleware(['auth','verified'])->group(function () {
             // ================= STOK MINIMUM =================
             $stokMinimum = Obat::whereColumn('stok','<=','safety_stock')->get();
 
-            // NOTIF AMAN (gak bikin crash)
+            // NOTIF AMAN
             try {
                 $gudangs = User::where('role','gudang')->get();
                 foreach ($stokMinimum as $obat) {
@@ -99,11 +114,9 @@ Route::middleware(['auth','verified'])->group(function () {
                         $gudang->notify(new StokMenipisNotification($obat));
                     }
                 }
-            } catch (\Exception $e) {
-                // skip notif kalau error
-            }
+            } catch (\Exception $e) {}
 
-            // ================= OBAT TERLARIS =================
+            // ================= INSIGHT =================
             $obatTerlaris = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
                 ->groupBy('obat_id')
                 ->orderByDesc('total')
@@ -146,8 +159,6 @@ Route::middleware(['auth','verified'])->group(function () {
             ));
 
         } catch (\Exception $e) {
-
-            // 🔥 FALLBACK BIAR GAK 502
             return "Dashboard error: " . $e->getMessage();
         }
 
@@ -169,7 +180,7 @@ Route::middleware(['auth','verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-    // ================= ANALISIS ROP =================
+    // ================= ROP =================
     Route::get('/analisis-rop', [RopController::class, 'index'])->name('analisis.rop');
 
 
