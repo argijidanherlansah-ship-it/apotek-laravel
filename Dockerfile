@@ -9,28 +9,25 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Set working directory
 WORKDIR /app
 
-# Copy project
+# Copy semua file project
 COPY . .
 
-# Install PHP deps
+# Install dependency Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Install frontend deps
+# Install & build frontend (Vite)
 RUN npm install
 RUN npm run build
 
-# Clear cache
+# Clear cache Laravel
 RUN php artisan config:clear
 RUN php artisan cache:clear
 
-# 🔥 IMPORTANT: GENERATE KEY + MIGRATE
-RUN php artisan key:generate
-RUN php artisan migrate --force
-
-# Permission
+# Permission (biar gak error storage)
 RUN chmod -R 777 storage bootstrap/cache
 
-# Run server
+# Jalankan server
 CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
