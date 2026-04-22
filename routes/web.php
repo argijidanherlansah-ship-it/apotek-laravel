@@ -20,29 +20,12 @@ use App\Models\User;
 use App\Notifications\StokMenipisNotification;
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
-| WEB ROUTES (FINAL FIX VERSION)
+| WEB ROUTES (FINAL CLEAN VERSION)
 |--------------------------------------------------------------------------
 */
-
-// ================= INIT USER (SEMENTARA) =================
-Route::get('/init-user', function () {
-    try {
-        \App\Models\User::create([
-            'name' => 'admin',
-            'email' => 'admin@gmail.com',
-            'password' => bcrypt('12345678')
-        ]);
-
-        return 'User berhasil dibuat';
-    } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
-    }
-});
-
 
 // ================= LANDING =================
 Route::get('/', function () {
@@ -62,6 +45,7 @@ Route::middleware(['auth','verified'])->group(function () {
 
         try {
 
+            // BASIC DATA
             $totalObat = Obat::count();
             $totalSupplier = Supplier::count();
             $totalMasuk = TransaksiMasuk::count();
@@ -106,7 +90,7 @@ Route::middleware(['auth','verified'])->group(function () {
             // ================= STOK MINIMUM =================
             $stokMinimum = Obat::whereColumn('stok','<=','safety_stock')->get();
 
-            // NOTIF AMAN
+            // NOTIF (SAFE)
             try {
                 $gudangs = User::where('role','gudang')->get();
                 foreach ($stokMinimum as $obat) {
@@ -167,10 +151,8 @@ Route::middleware(['auth','verified'])->group(function () {
 
     // ================= SETTING =================
     Route::middleware('role:admin')->group(function () {
-
         Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
         Route::post('/setting/update', [SettingController::class, 'update'])->name('setting.update');
-
     });
 
 
