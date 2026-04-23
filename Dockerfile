@@ -10,12 +10,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
+# 🔥 FIX ENV (INI KUNCI)
+RUN cp .env.example .env || true
+
 RUN composer install --no-dev --optimize-autoloader
 
 RUN npm install
 RUN npm run build
 
-# 🔥 CLEAR SEMUA CACHE (INI KUNCINYA)
+# 🔥 CLEAR CACHE
 RUN php artisan config:clear
 RUN php artisan cache:clear
 RUN php artisan route:clear
