@@ -10,23 +10,18 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
-# 🔥 FIX ENV
 RUN cp .env.example .env || true
 
-# 🔥 INSTALL
 RUN composer install --no-dev --optimize-autoloader
 
 RUN npm install
 RUN npm run build
 
-# 🔥 WAJIB BANGET
+# 🔥 APP KEY
 RUN php artisan key:generate
 
-# 🔥 SQLITE FIX
+# 🔥 SQLITE
 RUN mkdir -p database && touch database/database.sqlite
-
-# 🔥 MIGRATE
-RUN php artisan migrate --force
 
 # 🔥 CLEAR CACHE
 RUN php artisan config:clear
@@ -34,10 +29,9 @@ RUN php artisan cache:clear
 RUN php artisan route:clear
 RUN php artisan view:clear
 
-# 🔥 PERMISSION
 RUN chmod -R 777 storage bootstrap/cache database
 
 EXPOSE 8080
 
-# 🔥 JANGAN pakai artisan serve
-CMD php -S 0.0.0.0:${PORT} -t public
+# 🔥 MIGRATE DI RUNTIME + START SERVER
+CMD php artisan migrate --force && php -S 0.0.0.0:${PORT} -t public
