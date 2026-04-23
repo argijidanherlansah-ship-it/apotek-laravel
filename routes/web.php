@@ -17,23 +17,17 @@ use App\Models\TransaksiMasuk;
 use App\Models\TransaksiKeluar;
 use App\Models\User;
 
-use App\Notifications\StokMenipisNotification;
-
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| WEB ROUTES (DEBUG MODE 🚨)
+| WEB ROUTES (SAFE MODE 🚀)
 |--------------------------------------------------------------------------
 */
 
-// ================= ROOT DEBUG =================
+// ================= ROOT (TEST WAJIB) =================
 Route::get('/', function () {
-    try {
-        return "APLIKASI HIDUP 🚀";
-    } catch (\Throwable $e) {
-        return "ERROR ROOT: " . $e->getMessage();
-    }
+    return "APOTEK FIX 🚀";
 });
 
 // ================= FITUR =================
@@ -49,7 +43,7 @@ Route::get('/fitur', function () {
 // ================= AUTH =================
 Route::middleware(['auth','verified'])->group(function () {
 
-    // ================= DASHBOARD DEBUG =================
+    // ================= DASHBOARD =================
     Route::get('/dashboard', function () {
 
         try {
@@ -99,17 +93,8 @@ Route::middleware(['auth','verified'])->group(function () {
             // ================= STOK MINIMUM =================
             $stokMinimum = Obat::whereColumn('stok','<=','safety_stock')->get();
 
-            // ================= NOTIF SAFE =================
-            try {
-                $gudangs = User::where('role','gudang')->get();
-                foreach ($stokMinimum as $obat) {
-                    foreach ($gudangs as $gudang) {
-                        $gudang->notify(new StokMenipisNotification($obat));
-                    }
-                }
-            } catch (\Throwable $e) {
-                // skip notif kalau error
-            }
+            // ❌ NOTIF DIMATIKAN (PENYEBAB 502)
+            // nanti bisa diaktifkan lagi setelah deploy stabil
 
             // ================= INSIGHT =================
             $obatTerlaris = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
