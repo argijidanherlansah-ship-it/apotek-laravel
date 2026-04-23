@@ -15,12 +15,13 @@ RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 RUN npm run build
 
+# 🔥 CLEAR SEMUA CACHE (INI KUNCINYA)
+RUN php artisan config:clear
+RUN php artisan cache:clear
+RUN php artisan route:clear
+RUN php artisan view:clear
+
 RUN chmod -R 777 storage bootstrap/cache
 
 EXPOSE 8080
-
-CMD php artisan config:clear && \
-    php artisan cache:clear && \
-    php artisan config:cache && \
-    php artisan migrate --force && \
-    php -S 0.0.0.0:8080 -t public
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "public"]
