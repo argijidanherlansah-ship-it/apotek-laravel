@@ -23,24 +23,33 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| WEB ROUTES (FINAL CLEAN VERSION)
+| WEB ROUTES (DEBUG MODE 🚨)
 |--------------------------------------------------------------------------
 */
 
-// ================= LANDING =================
+// ================= ROOT DEBUG =================
 Route::get('/', function () {
-    return view('welcome');
+    try {
+        return "APLIKASI HIDUP 🚀";
+    } catch (\Throwable $e) {
+        return "ERROR ROOT: " . $e->getMessage();
+    }
 });
 
+// ================= FITUR =================
 Route::get('/fitur', function () {
-    return view('fitur');
+    try {
+        return view('fitur');
+    } catch (\Throwable $e) {
+        return "ERROR FITUR: " . $e->getMessage();
+    }
 })->name('fitur');
 
 
 // ================= AUTH =================
 Route::middleware(['auth','verified'])->group(function () {
 
-    // ================= DASHBOARD =================
+    // ================= DASHBOARD DEBUG =================
     Route::get('/dashboard', function () {
 
         try {
@@ -62,8 +71,8 @@ Route::middleware(['auth','verified'])->group(function () {
 
             foreach ($grafik as $g) {
                 if ($g->obat) {
-                    $labels[] = $g->obat->nama_obat;
-                    $data[] = $g->total;
+                    $labels[] = $g->obat->nama_obat ?? '-';
+                    $data[] = $g->total ?? 0;
                 }
             }
 
@@ -82,7 +91,7 @@ Route::middleware(['auth','verified'])->group(function () {
             $bulanData = array_fill(1, 12, 0);
 
             foreach ($grafikBulanan as $b) {
-                $bulanData[$b->bulan] = $b->total;
+                $bulanData[$b->bulan] = $b->total ?? 0;
             }
 
             $bulanData = array_values($bulanData);
@@ -90,7 +99,7 @@ Route::middleware(['auth','verified'])->group(function () {
             // ================= STOK MINIMUM =================
             $stokMinimum = Obat::whereColumn('stok','<=','safety_stock')->get();
 
-            // NOTIF (SAFE)
+            // ================= NOTIF SAFE =================
             try {
                 $gudangs = User::where('role','gudang')->get();
                 foreach ($stokMinimum as $obat) {
@@ -98,7 +107,9 @@ Route::middleware(['auth','verified'])->group(function () {
                         $gudang->notify(new StokMenipisNotification($obat));
                     }
                 }
-            } catch (\Exception $e) {}
+            } catch (\Throwable $e) {
+                // skip notif kalau error
+            }
 
             // ================= INSIGHT =================
             $obatTerlaris = TransaksiKeluar::selectRaw('obat_id, SUM(jumlah) as total')
@@ -110,8 +121,8 @@ Route::middleware(['auth','verified'])->group(function () {
             $insight = null;
             if ($obatTerlaris && $obatTerlaris->obat) {
                 $insight = "Obat paling banyak digunakan adalah "
-                    . $obatTerlaris->obat->nama_obat .
-                    " sebanyak " . $obatTerlaris->total . " unit.";
+                    . ($obatTerlaris->obat->nama_obat ?? '-') .
+                    " sebanyak " . ($obatTerlaris->total ?? 0) . " unit.";
             }
 
             // ================= TOP OBAT =================
@@ -142,8 +153,13 @@ Route::middleware(['auth','verified'])->group(function () {
                 'totalHarusPesan'
             ));
 
-        } catch (\Exception $e) {
-            return "Dashboard error: " . $e->getMessage();
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
         }
 
     })->name('dashboard');
@@ -151,8 +167,10 @@ Route::middleware(['auth','verified'])->group(function () {
 
     // ================= SETTING =================
     Route::middleware('role:admin')->group(function () {
+
         Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
         Route::post('/setting/update', [SettingController::class, 'update'])->name('setting.update');
+
     });
 
 
