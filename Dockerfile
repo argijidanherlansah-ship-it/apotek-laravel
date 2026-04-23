@@ -10,28 +10,18 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
-RUN cp .env.example .env || true
-
 RUN composer install --no-dev --optimize-autoloader
 
 RUN npm install
 RUN npm run build
 
-# 🔥 APP KEY
-RUN php artisan key:generate
-
-# 🔥 SQLITE
-RUN mkdir -p database && touch database/database.sqlite
-
-# 🔥 CLEAR CACHE
 RUN php artisan config:clear
 RUN php artisan cache:clear
 RUN php artisan route:clear
 RUN php artisan view:clear
 
-RUN chmod -R 777 storage bootstrap/cache database
+RUN chmod -R 777 storage bootstrap/cache
 
 EXPOSE 8080
 
-# 🔥 MIGRATE DI RUNTIME + START SERVER
-CMD php artisan migrate --force && php -S 0.0.0.0:${PORT} -t public
+CMD php -S 0.0.0.0:${PORT} -t public
